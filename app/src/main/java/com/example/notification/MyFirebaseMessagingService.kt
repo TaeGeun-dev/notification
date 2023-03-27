@@ -3,12 +3,16 @@ package com.example.notification
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_UPDATE_CURRENT
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.bumptech.glide.Glide
+import com.google.android.datatransport.runtime.scheduling.jobscheduling.SchedulerConfig.Flag
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
@@ -59,11 +63,21 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val notificationMessage = message.data["message"]
         val imageUrl = message.data["imageUrl"]
 
+        val intent = Intent(this, MainActivity::class.java).apply {
+            putExtra("notificationType","${type.title} 푸시 클릭")
+            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        }
+
+        val pendingIntent = PendingIntent.getActivity(this, type.notificationId, intent, FLAG_UPDATE_CURRENT)
+
+
         val notificationBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(title)
             .setContentText(notificationMessage)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
 
         when (type) {
             NotificationType.EXPANDABLE -> {
